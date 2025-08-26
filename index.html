@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tumač snova – Demo (AI)</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f6f7fb;margin:0;padding:32px}
+    .box{max-width:720px;margin:0 auto;background:#fff;padding:24px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+    h1{margin:0 0 8px}
+    p{margin:0 0 16px;color:#555}
+    textarea{width:100%;min-height:120px;padding:12px;border-radius:12px;border:1px solid #dcdfe4;font-size:16px}
+    button{margin-top:12px;padding:10px 16px;border:0;border-radius:12px;background:#4f46e5;color:#fff;font-weight:600;cursor:pointer}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .result{margin-top:16px;padding:14px;background:#f1f0ff;border-radius:12px;white-space:pre-wrap}
+    .muted{color:#777;font-size:13px;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>🌀 Tumač snova (AI)</h1>
+    <p>Upiši svoj san i klikni <b>Protumači</b>. AI će dati 2–3 simbolička i psihološka značenja + praktične savjete.</p>
+
+    <textarea id="dream" placeholder="Sanjao/la sam..."></textarea>
+    <br/>
+    <button id="btn">Protumači</button>
+    <div class="muted">Napomena: ovo nije medicinski ni psihološki savjet.</div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    const btn = document.getElementById("btn");
+    const out = document.getElementById("result");
+    btn.addEventListener("click", async () => {
+      const dream = document.getElementById("dream").value.trim();
+      if (!dream) return;
+      btn.disabled = true;
+      out.textContent = "⏳ Tumačim...";
+
+      try {
+        const res = await fetch("/api/interpret", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dream })
+        });
+        const data = await res.json();
+        if (res.ok) out.textContent = data.result;
+        else out.textContent = "❌ Greška: " + (data.error || "Nešto je pošlo po zlu.");
+      } catch (e) {
+        out.textContent = "❌ Greška mreže.";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
