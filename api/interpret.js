@@ -4,25 +4,33 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { dream: dreamRaw } = req.body || {};
+    const { dream: dreamRaw, lang = "hr" } = req.body || {};
     const dream = (dreamRaw || "").toString().slice(0, 2000);
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: "Missing OPENAI_API_KEY env" });
 
+    const prompts = {
+      hr: "Ti si tumač snova. Odgovaraj na hrvatskom jeziku jasno i praktično. Daj 2–3 simbolička i psihološka tumačenja te 3 praktična savjeta.",
+      en: "You are a dream interpreter. Respond in English clearly and practically. Provide 2–3 symbolic/psychological interpretations and 3 actionable tips."
+    };
+
     const payload = {
       model: "gpt-4o-mini",
       temperature: 0.7,
       messages: [
-        { role: "system", content: "Ti si tumač snova. Odgovaraj na hrvatskom, jasno i konkretno. Daj 2–3 moguća tumačenja i 3 praktična savjeta." },
+        { role: "system", content: prompts[lang] || prompts.hr },
         { role: "user", content: dream }
       ]
     };
 
     const r = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-      body: JSON.stringify(payload),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(payload)
     });
 
     const data = await r.json();
@@ -38,4 +46,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Server error", detail: String(e) });
   }
 }
-
