@@ -1,0 +1,11 @@
+<!DOCTYPE html><meta charset="utf-8">
+<button id=b>Testaj API</button>
+<pre id=o></pre>
+<script>
+b.onclick=async()=>{
+  o.textContent="Zovem /api/interpret…";
+  const r=await fetch("/api/interpret",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({dream:"sanjao sam zmije"})});
+  const t=await r.text();
+  o.textContent = "STATUS: "+r.status+"\n\n"+t;
+};
+</script>
